@@ -127,6 +127,7 @@ MonoBehaviour:
   groundCheck: {fileID: 6391293881076972045}
   towerMaterial: {fileID: 2100000, guid: 6a8c10887c95a8042928f7732e0f7dee, type: 2}
   neutralMaterial: {fileID: 2100000, guid: ed884d8509327e8429b4bf5b36130e43, type: 2}
+  maxDepenetrationVelocity: 1000
 --- !u!114 &6391293881076972045
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -134,7 +135,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6391293881076972036}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2be6b222e55126429cccc464e779487, type: 3}
   m_Name: 

@@ -1,90 +1,102 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using TMPro;
+using System.Linq;
 using UnityEngine;
 
-public class TowerController : Singleton<TowerController>
+namespace FeoFun.Core
 {
-    public static event Action<int> ONChangedTowerSize;
-    
-    [SerializeField] private Transform neutralCubesParent;
-    [SerializeField] private NeutralCube neutralCubePrefab;
-    [SerializeField] private TowerCube towerCubePrefab;
-
-    private readonly List<TowerCube> _towerParts = new List<TowerCube>();
-    private int _startedTowerSize;
-    private Vector3 _startedPos;
-    
-    public List<TowerCube> TowerParts => _towerParts;
-    public TowerCube FirstCube => _towerParts[0];
-    public int TowerSize => _towerParts.Count;
-    
-    private void Start()
+    public class TowerController : Singleton<TowerController>
     {
-        foreach (Transform child in transform)
+        public static event Action<int> ONChangedTowerSize;
+
+        [SerializeField] private TowerMover towerMover;
+        [SerializeField] private TowerJumper towerJumper;
+        [SerializeField] private Transform neutralCubesParent;
+        [SerializeField] private TowerCube towerCubePrefab;
+
+        private readonly List<TowerCube> _towerParts = new List<TowerCube>();
+        private int _startedTowerSize;
+        private Vector3 _startedPos;
+
+        public List<TowerCube> TowerParts => _towerParts;
+        public TowerCube FirstCube => _towerParts[0];
+        public int TowerSize => _towerParts.Count;
+        public float CenterOfTower => (_towerParts.Count - 1) / 2f;
+
+        protected override void Awake()
         {
-            TowerCube cube = child.gameObject.GetComponent<TowerCube>();
-            if (cube)
+            base.Awake();
+            GameManager.ONGameStart += StartMove;
+            GameManager.ONGameRestart += Reset;
+
+            _startedTowerSize = transform.childCount;
+            _startedPos = transform.position;
+            Reset();
+        }
+
+        private void OnDestroy()
+        {
+            GameManager.ONGameStart -= StartMove;
+            GameManager.ONGameRestart -= Reset;
+        }
+
+        private void StartMove()
+        {
+            towerMover.enabled = true;
+            towerJumper.enabled = true;
+        }
+
+        private void Reset()
+        {
+            towerMover.enabled = false;
+            towerJumper.enabled = false;
+            PrepareToStart();
+        }
+        
+        public void AddToTower(NeutralCube neutralCube)
+        {
+            var cube = Instantiate(towerCubePrefab, transform);
+            cube.transform.localPosition = _towerParts.Last().transform.localPosition + Vector3.up;
+            _towerParts.Add(cube);
+            Destroy(neutralCube.gameObject);
+
+            ONChangedTowerSize?.Invoke(_towerParts.Count);
+        }
+
+        public void RemoveFromTower(TowerCube cube)
+        {
+            cube.IsNeutral = true;
+            cube.FirstCube = false;
+            cube.transform.parent = neutralCubesParent;
+            _towerParts.Remove(cube);
+            if (_towerParts.Count > 0)
             {
-                _towerParts.Add(cube);
+                _towerParts[0].FirstCube = true;
+                ONChangedTowerSize?.Invoke(_towerParts.Count);
+            }
+            else
+            {
+                GameManager.Instance.RestartGame();
             }
         }
-        
-        _towerParts[0].FirstCube = true;
-        _startedTowerSize = TowerSize;
-        _startedPos = transform.position;
-    }
 
-    public void AddToTower(NeutralCube neutralCube)
-    {
-        var cube = Instantiate(towerCubePrefab, transform);
-        cube.transform.localPosition = Vector3.up * (transform.childCount - 1);
-        _towerParts.Add(cube);
-        Destroy(neutralCube.gameObject);
-        
-        ONChangedTowerSize?.Invoke(_towerParts.Count);
-    }
-
-    public void RemoveFromTower(TowerCube cube)
-    {
-        cube.IsNeutral = true;
-        cube.FirstCube = false;
-        cube.transform.parent = neutralCubesParent;
-        _towerParts.Remove(cube);
-        if (_towerParts.Count > 0)
+        private void PrepareToStart()
         {
-            _towerParts[0].FirstCube = true;
-        }
-        else
-        {
-            //TODO: end 
-            GameManager.Instance.FinishGame();
-        }
-        
-        ONChangedTowerSize?.Invoke(_towerParts.Count);
-    }
-
-    public void PrepareToStart()
-    {
-        if (_towerParts.Count > _startedTowerSize)
-        {
-            for (int i = _towerParts.Count - 1; i > _startedTowerSize; i--)
+            foreach (Transform child in transform)
             {
-                Destroy(_towerParts[i].gameObject);
-                _towerParts.RemoveAt(i);
+                Destroy(child.gameObject);
             }
-        }
-        else
-        {
-            for (int i = _towerParts.Count; i < _startedTowerSize; i++)
+
+            _towerParts.Clear();
+            for (int i = 0; i < _startedTowerSize; i++)
             {
                 var cube = Instantiate(towerCubePrefab, transform);
-                cube.transform.localPosition = Vector3.up * (transform.childCount - 1);
+                cube.transform.localPosition = Vector3.up * i;
                 _towerParts.Add(cube);
             }
+            
+            transform.position = _startedPos;
+            _towerParts[0].FirstCube = true;
         }
-
-        transform.position = _startedPos;
     }
 }

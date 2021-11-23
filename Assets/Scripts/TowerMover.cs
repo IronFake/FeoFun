@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class TowerMover : MonoBehaviour
+namespace FeoFun
 {
-    [SerializeField] private float speed = 1;
-    
-    private void Update()
+    public class TowerMover : MonoBehaviour
     {
-        transform.position += Vector3.forward * Time.deltaTime * speed;
+        [SerializeField] private float speed = 1;
+
+        private void Update()
+        {
+            transform.position += Vector3.forward * Time.deltaTime * speed;
+        }
     }
 }

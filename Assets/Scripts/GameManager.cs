@@ -1,19 +1,47 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using FeoFun.Inputs;
 using UnityEngine;
 
-public class GameManager : Singleton<GameManager>
+namespace FeoFun.Core
 {
-    [SerializeField] private TowerMover towerMover;
-    
-    public void StartGame()
+    public class GameManager : Singleton<GameManager>
     {
-        towerMover.enabled = true;
-    }
+        public static event Action ONGameStart;
+        public static event Action ONGameRestart;
 
-    public void FinishGame()
-    {
-        towerMover.enabled = false;
-        TowerController.Instance.PrepareToStart();
+        [SerializeField] private GameObject startingText;
+
+        private bool _isStarted;
+        private InputManager _inputManager;
+
+        private void Start()
+        {
+            _inputManager = InputManager.Instance;
+        }
+
+        private void StartGame()
+        {
+            ONGameStart?.Invoke();
+            startingText.SetActive(false);
+            _isStarted = true;
+        }
+
+        public void RestartGame()
+        {
+            ONGameRestart?.Invoke();
+            startingText.SetActive(true);
+            _isStarted = false;
+        }
+
+        private void Update()
+        {
+            if (_isStarted)
+                return;
+
+            if (_inputManager.AnyKey)
+            {
+                StartGame();
+            }
+        }
     }
 }

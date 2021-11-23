@@ -1,41 +1,23 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class GroundCheck : MonoBehaviour
+namespace FeoFun.Core
 {
-    [SerializeField] private LayerMask groundMask;
-    [SerializeField] private float height;
-    
-    public bool IsGrounded { get; private set; }
-
-    // private void OnCollisionStay(Collision other)
-    // {
-    //     IsGrounded = other != null && other.gameObject.layer == groundMask.value;
-    // }
-    //
-    // private void OnCollisionExit(Collision other)
-    // {
-    //     IsGrounded = false;
-    // }
-
-    private void FixedUpdate()
+    public class GroundCheck : MonoBehaviour
     {
-        Ray ray = new Ray(transform.position, Vector3.down);
-        RaycastHit hit;
-        Color rayColor;
-        if (Physics.Raycast(ray, out hit, height, groundMask))
+        [SerializeField] private LayerMask groundMask;
+        [SerializeField] private float height;
+
+        public bool IsGrounded { get; private set; }
+
+        private void FixedUpdate()
         {
-            IsGrounded = true;
-            rayColor = Color.green;
+            IsGrounded = Physics.Raycast(transform.position, Vector3.down, height, groundMask);
         }
-        else
+
+        private void OnDrawGizmos()
         {
-            IsGrounded = false;
-            rayColor = Color.red;
+            Gizmos.color = IsGrounded ? Color.green : Color.red;
+            Gizmos.DrawRay(transform.position, Vector3.down * height);
         }
-        
-        Debug.DrawRay(ray.origin, ray.direction * height, rayColor);
     }
 }

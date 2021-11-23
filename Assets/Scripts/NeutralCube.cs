@@ -1,22 +1,23 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class NeutralCube : MonoBehaviour
+namespace FeoFun.Core
 {
-    private bool _isEntered;
-    
-    private void OnTriggerEnter(Collider other)
+    public class NeutralCube : MonoBehaviour
     {
-        if(_isEntered)
-            return;
-        
-        TowerCube towerCube = other.gameObject.GetComponent<TowerCube>();
-        if (towerCube)
+        private bool _isEntered;
+
+        private void OnTriggerEnter(Collider other)
         {
-            Debug.Log("Collision with tower cube");
-            TowerController.Instance.AddToTower(this);
-            _isEntered = true;
+            if (_isEntered)
+                return;
+
+            TowerCube towerCube = other.gameObject.GetComponent<TowerCube>();
+            if (towerCube)
+            {
+                Debug.Log("Collision with tower cube");
+                TowerController.Instance.AddToTower(this);
+                _isEntered = true;
+            }
         }
     }
 }
